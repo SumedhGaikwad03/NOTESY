@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000/api/notes"; 
+const BASE_URL = "https://notesy-backend-xrw3.onrender.com/api/notes";
+
 
 // this is basically an file that is the middle layer between the frontend and backend
 export const getAllNotes = () => {
@@ -27,6 +28,11 @@ export const deleteNote = (id) => {
 export const getNoteById = (id) => {
   return axios.get(`${BASE_URL}/getnote`, { data: { ID: id } });
 };
+
+
+
+export default api;
+
 
 
 
