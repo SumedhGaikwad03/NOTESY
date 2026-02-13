@@ -1,3 +1,4 @@
+// this is the component that displays all notes and allows editing and deleting them via buttons 
 import React, { useEffect, useState } from 'react';
 import { handleGetAllNotes , handleDeleteNote , handleUpdateNote } from '../utils/noteHandlers';
 import UpdateNote from './UpdateNote';
@@ -36,14 +37,14 @@ function AllNotes() {
             <h3 className="text-xl font-semibold text-amber-800">{note.title}</h3>
             <p className="text-amber-700 mt-2 whitespace-pre-wrap">{note.content}</p>
             <button
-              onClick={() => handleDeleteNote(note._id, setNotes)}
+              onClick={() => handleDeleteNote(note._id, setNotes)} // gives a call to delete note function from noteHandlers 
               className="absolute top-2 right-2 text-red-500 hover:text-red-700"
               title="Delete Note"
             >
               🗑️
             </button>
             <button
-            onClick={() => handleEditClick(note)}
+            onClick={() => handleEditClick(note)} // calls in notehandlers update note function 
             className="absolute top-2 right-10 text-blue-500 hover:text-blue-700"
              title="Edit Note"
              >

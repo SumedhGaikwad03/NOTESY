@@ -1,5 +1,5 @@
 
-import { addNote ,getAllNotes,deleteNote , updateNote } from '../api';
+import { addNote ,getAllNotes,deleteNote , updateNote } from './api';
 
 
 export const handleAddNote = async (title, content, setTitle, setContent) => {
@@ -49,7 +49,7 @@ export const handleGetAllNotes = async (setNotes) => {
 export const handleDeleteNote = async (id, setNotes) => {
   try {
     console.log("Deleting note with ID:", id);
-    await deleteNote(id);
+    await deleteNote(id); // gives a call to  api.js deleteNote function
     setNotes((prevNotes) => prevNotes.filter(note => note._id !== id));
     console.log("Note deleted:", id);
   } catch (error) {

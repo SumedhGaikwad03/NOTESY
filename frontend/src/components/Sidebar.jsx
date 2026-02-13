@@ -1,4 +1,6 @@
 // src/components/Sidebar.jsx
+// this is the sidebar component for the note-taking application. It includes
+// branding, a search bar, a button to add new notes, and navigation to view all notes.
 import React from 'react';
 import { FileText, Plus, Search } from 'lucide-react';
 import { handleAddNote } from '../utils/noteHandlers';

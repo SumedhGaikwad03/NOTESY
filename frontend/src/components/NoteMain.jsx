@@ -1,4 +1,6 @@
-// src/components/NoteMain.jsx
+// src/components/NoteMain.jsx 
+// this is the frontend component that combines the Sidebar and NoteEditor components 
+//   to create the main interface for the note-taking application. 
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import NoteEditor from './NoteEditor';

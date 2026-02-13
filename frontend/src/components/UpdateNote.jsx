@@ -1,3 +1,4 @@
+// this is the component for updating an existing note in the note-taking application. 
 import React, { useState } from 'react';
 import { handleUpdateNote } from '../utils/noteHandlers';
 

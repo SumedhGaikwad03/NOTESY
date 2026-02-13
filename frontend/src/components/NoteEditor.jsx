@@ -1,4 +1,5 @@
-
+// this component provides an editor interface for creating and editing notes,
+// including fields for the note title and content, as well as displaying the last updated date. 
 
 import { Calendar, Edit3 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
