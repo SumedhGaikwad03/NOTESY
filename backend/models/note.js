@@ -20,6 +20,11 @@ const noteSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true, // each note must be associated with a user, so we set required to true
+  },
+  room :{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Room",
+    required: true, // each note must be associated with a room, so we set required to true
   }
 });
 

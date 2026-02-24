@@ -1,7 +1,7 @@
 // this is the component that displays all notes and allows editing and deleting them via buttons 
 import React, { useEffect, useState } from 'react';
 import { handleGetAllNotes , handleDeleteNote , handleUpdateNote } from '../utils/noteHandlers';
-import UpdateNote from './UpdateNote';
+import UpdateNote from '../components/UpdateNote';
 
 function AllNotes() {
   const [notes, setNotes] = useState([]);

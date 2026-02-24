@@ -2,20 +2,43 @@
 import { addNote ,getAllNotes,deleteNote , updateNote } from './api';
 
 
-export const handleAddNote = async (title, content, setTitle, setContent) => {
+export const handleAddNote = async (
+  title,
+  content,
+  roomId,
+  setTitle,
+  setContent,
+  setNotes
+) => {
+
   if (!title.trim() || !content.trim()) return;
 
   try {
-    const newNote = { title: title.trim(), content: content.trim() };
+
+    const newNote = {
+      title: title.trim(),
+      content: content.trim(),
+      roomId: roomId
+    };
+
     const res = await addNote(newNote);
-    console.log("Note added:", res.data);
+
+    const createdNote = res.data;
+
+    // THIS IS THE KEY FIX
+    setNotes(prevNotes => [createdNote, ...prevNotes]);
 
     setTitle("");
     setContent("");
+
   } catch (error) {
+
     console.error("Error adding note:", error);
+
   }
+
 };
+
 // const handleAddNote = async () => {
 //   if (!title.trim() || !content.trim()) 
 //     return;
