@@ -151,10 +151,27 @@ function RoomView() {
     socket.on("note_deleted", refreshNotes);
 socket.on("task_created", (task) => {
   setTasks(prev => {
-    if (prev.some(t => t._id === task._id)) return prev;
-    return [task, ...prev];
+    // Find matching optimistic task by text + creator
+    const match = prev.find(
+      t => t.isOptimistic &&
+           t.text === task.text &&
+           t.createdBy?._id === task.createdBy?._id
+    );
+
+    if (match) {
+      return prev.map(t =>
+        t._id === match._id ? task : t
+      );
+    }
+
+    if (!prev.some(t => t._id === task._id)) {
+      return [task, ...prev];
+    }
+
+    return prev;
   });
 });
+
 socket.on("task_updated", (updatedTask) => {
   setTasks(prev =>
     prev.map(t => t._id === updatedTask._id ? updatedTask : t)
@@ -347,12 +364,13 @@ socket.on("task_deleted", (taskId) => {
     // Temporary fake ID
     const tempId = "temp-" + Date.now();
 
-    const optimisticTask = {
-      _id: tempId,
-      text,
-      completed: false,
-      createdBy: { username: "You" }
-    };
+   const optimisticTask = {
+  _id: "temp-" + Date.now(),
+  text,
+  completed: false,
+  createdBy: { _id: currentUserId, username: "You" },
+  isOptimistic: true
+};
 
     // 1️⃣ Add immediately
     setTasks(prev => [...prev, optimisticTask]);
