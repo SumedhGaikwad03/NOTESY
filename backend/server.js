@@ -26,6 +26,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 
 // MongoDB connection
@@ -38,7 +41,7 @@ app.use('/api/notes', notesRouter);
 app.use('/api/auth', authRouter);
 app.use("/api/rooms", taskrouter);
 app.use('/api/rooms', roomRouter);
-app.use("/api/health",taskrouter);
+
 
 
 // 🔥 Create HTTP server (required for socket.io)

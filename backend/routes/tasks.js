@@ -176,9 +176,7 @@ router.delete("/:roomId/tasks/:taskId", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-router.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
-});
+
 
 
 export default router;
