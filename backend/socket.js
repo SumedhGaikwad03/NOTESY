@@ -13,7 +13,7 @@ export const initSocket = (server) => {
     return ioInstance;
   }
 
-  const clientOrigin = process.env.CLIENT_ORIGIN || "http://localhost:5173";
+  const clientOrigin = process.env.CLIENT_ORIGIN || "http://localhost:5173" || "https://notesy-backend-xrw3.onrender.com";
 
   ioInstance = new Server(server, {
   cors: {
