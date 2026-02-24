@@ -9,6 +9,7 @@ import RoomView from "./pages/RoomView";
 import AllNotes from "./pages/allNotes";
 import PrivateRoute from "./components/PrivateRoute";
 import MyNotesView from "./pages/MyNotesView";
+import { isTokenValid } from "./utils/auth";
 
 function App() {
 
@@ -46,7 +47,7 @@ function App() {
         <Route
   path="/"
   element={
-    localStorage.getItem("token")
+    isTokenValid()
       ? <Navigate to="/rooms" />
       : <Navigate to="/login" />
   }
