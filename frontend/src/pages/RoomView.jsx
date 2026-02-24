@@ -351,7 +351,7 @@ socket.on("task_deleted", (taskId) => {
       _id: tempId,
       text,
       completed: false,
-      createdBy: { username: task.createdBy?.username || "You" }
+      createdBy: { username: "You" }
     };
 
     // 1️⃣ Add immediately
