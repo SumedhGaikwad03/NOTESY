@@ -149,11 +149,12 @@ function RoomView() {
     socket.on("note_created", refreshNotes);
     socket.on("note_updated", refreshNotes);
     socket.on("note_deleted", refreshNotes);
-
-    socket.on("task_created", (task) => {
- setTasks(prev => [optimisticTask, ...prev]);
+socket.on("task_created", (task) => {
+  setTasks(prev => {
+    if (prev.some(t => t._id === task._id)) return prev;
+    return [task, ...prev];
+  });
 });
-
 socket.on("task_updated", (updatedTask) => {
   setTasks(prev =>
     prev.map(t => t._id === updatedTask._id ? updatedTask : t)
@@ -302,7 +303,7 @@ socket.on("task_deleted", (taskId) => {
           </div>
 
           <div className="text-xs text-amber-600 mt-1">
-            {task.createdBy?.username}
+            {task.createdBy?.username || "You"}
           </div>
         </div>
       </div>

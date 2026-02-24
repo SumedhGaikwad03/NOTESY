@@ -69,11 +69,13 @@ console.log("🔥 IO instance exists:", !!io);
       return res.status(403).json({ message: "Access denied" });
     }
 
-    const task = await Task.create({
-      room: roomId,
-      text: text.trim(),
-      createdBy: req.userId
-    });
+    let task = await Task.create({
+  room: roomId,
+  text: text.trim(),
+  createdBy: req.userId
+});
+
+task = await task.populate("createdBy", "username");
    console.log("🔥 Emitting task_created to:", roomId.toString());
     const io = getIO();
     io.to(roomId.toString()).emit("task_created", task);
