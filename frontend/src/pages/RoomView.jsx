@@ -162,7 +162,9 @@ socket.on("task_updated", (updatedTask) => {
 });
 
 socket.on("task_deleted", (taskId) => {
-  setTasks(prev => prev.filter(t => t._id !== taskId));
+  setTasks(prev =>
+    prev.filter(t => String(t._id) !== String(taskId))
+  );
 });
 
     socket.on("online_users_update", setOnlineUsers);
@@ -303,36 +305,30 @@ socket.on("task_deleted", (taskId) => {
           </div>
 
           <div className="text-xs text-amber-600 mt-1">
-            {task.createdBy?.username || "You"}
+            {task.createdBy?.username }
           </div>
         </div>
       </div>
 
       <button
-        onClick={async () => {
-  const previousTasks = tasks;
-
-  // 1️⃣ Remove instantly
-  setTasks(prev => prev.filter(t => t._id !== task._id));
-
-  try {
-    await api.delete(`/rooms/${roomId}/tasks/${task._id}`);
-  } catch (err) {
-    // 2️⃣ Restore if fails
-    setTasks(previousTasks);
-  }
-}}
-        className="
-  text-amber-600
-  hover:text-red-500
-  transition
-  text-lg
-  font-bold
-  ml-3
-"
-      >
-        ×
-      </button>
+  onClick={async () => {
+    try {
+      await api.delete(`/rooms/${roomId}/tasks/${task._id}`);
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
+  }}
+  className="
+    text-amber-600
+    hover:text-red-500
+    transition
+    text-lg
+    font-bold
+    ml-3
+  "
+>
+  ×
+</button>
     </div>
   ))}
 </div>
@@ -355,7 +351,7 @@ socket.on("task_deleted", (taskId) => {
       _id: tempId,
       text,
       completed: false,
-      createdBy: { username: "You" }
+      createdBy: { username: task.createdBy?.username || "You" }
     };
 
     // 1️⃣ Add immediately
