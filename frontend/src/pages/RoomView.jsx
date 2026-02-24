@@ -18,6 +18,8 @@ function RoomView() {
   const [notes, setNotes] = useState([]);
   const [room, setRoom] = useState(null);
 
+   const currentUserId = localStorage.getItem("userId");
+
   const [showEditor, setShowEditor] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [showActivity, setShowActivity] = useState(false);
@@ -40,11 +42,20 @@ function RoomView() {
 
   const [inviteError , setInviteError] = useState("");
 
+  const [showBetaNotice, setShowBetaNotice] = useState(false);
+
+ 
+
   /* ---------------- FETCHERS ---------------- */
 
   const fetchNotes = async () => {
     const res = await api.get(`/rooms/${roomId}/notes`);
     setNotes(res.data);
+  };
+
+  const closeBetaNotice = () => {
+  localStorage.setItem("notesy_beta_seen", "true");
+  setShowBetaNotice(false);
   };
 
   const fetchRoom = async () => {
@@ -106,6 +117,9 @@ function RoomView() {
       setInviteError("Something went wrong.");
     }
   }
+
+  
+
 };
 
   /* ---------------- SOCKET LOGIC ---------------- */
@@ -120,6 +134,12 @@ function RoomView() {
 
     const joinRoom = () => socket.emit("join_room", roomId);
 
+    const hasSeen = localStorage.getItem("notesy_beta_seen");
+  if (!hasSeen) {
+    setShowBetaNotice(true);
+  } 
+
+  
     if (socket.connected) joinRoom();
     socket.on("connect", joinRoom);
 
@@ -130,9 +150,19 @@ function RoomView() {
     socket.on("note_updated", refreshNotes);
     socket.on("note_deleted", refreshNotes);
 
-    socket.on("task_created", refreshTasks);
-    socket.on("task_updated", refreshTasks);
-    socket.on("task_deleted", refreshTasks);
+    socket.on("task_created", (task) => {
+ setTasks(prev => [optimisticTask, ...prev]);
+});
+
+socket.on("task_updated", (updatedTask) => {
+  setTasks(prev =>
+    prev.map(t => t._id === updatedTask._id ? updatedTask : t)
+  );
+});
+
+socket.on("task_deleted", (taskId) => {
+  setTasks(prev => prev.filter(t => t._id !== taskId));
+});
 
     socket.on("online_users_update", setOnlineUsers);
 
@@ -204,36 +234,74 @@ function RoomView() {
             <h2 className="font-semibold mb-4">Room Tasks</h2>
 
 {/* Task List */}
-<div className="flex-1 overflow-y-auto space-y-2">
+<div className="flex-1 overflow-y-auto space-y-2 ">
   {[
     ...tasks.filter(t => !t.completed),
     ...tasks.filter(t => t.completed)
   ].map(task => (
     <div
+    
+    
       key={task._id}
-      className="flex items-center justify-between bg-gray-50 p-2 rounded hover:bg-gray-100 transition"
+      className={`
+  flex items-start justify-between
+  p-4 rounded-xl
+  bg-gradient-to-br from-yellow-100 via-yellow-50 to-amber-100
+  shadow-sm hover:shadow-md
+  border border-yellow-200
+  hover:-translate-y-0.5
+  transition-all duration-200
+  ${task.completed ? "opacity-70" : ""}
+`}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3 w-full">
         <input
           type="checkbox"
           checked={task.completed}
+          className="mt-1 accent-amber-500 w-4 h-4"
           onChange={async () => {
-            await api.put(`/rooms/${roomId}/tasks/${task._id}`, {
-              completed: !task.completed
-            });
-          }}
+  const updatedCompleted = !task.completed;
+
+  // 1️⃣ Optimistically update UI
+  setTasks(prev =>
+    prev.map(t =>
+      t._id === task._id
+        ? { ...t, completed: updatedCompleted }
+        : t
+    )
+  );
+
+  try {
+    // 2️⃣ Tell server
+    await api.put(`/rooms/${roomId}/tasks/${task._id}`, {
+      completed: updatedCompleted
+    });
+  } catch (err) {
+    // 3️⃣ Revert if it fails (optional but clean)
+    setTasks(prev =>
+      prev.map(t =>
+        t._id === task._id
+          ? { ...t, completed: !updatedCompleted }
+          : t
+      )
+    );
+  }
+}}
+
+        
         />
 
-        <div>
+        <div className="flex-1">
           <div
-            className={`text-sm ${
-              task.completed ? "line-through text-gray-400" : ""
+          
+            className={`text-sm font-medium transition ${
+              task.completed ? "line-through text-gray-400" : "text-amber-900"
             }`}
           >
             {task.text}
           </div>
 
-          <div className="text-xs text-gray-400">
+          <div className="text-xs text-amber-600 mt-1">
             {task.createdBy?.username}
           </div>
         </div>
@@ -241,9 +309,26 @@ function RoomView() {
 
       <button
         onClick={async () => {
-          await api.delete(`/rooms/${roomId}/tasks/${task._id}`);
-        }}
-        className="text-red-400 text-sm"
+  const previousTasks = tasks;
+
+  // 1️⃣ Remove instantly
+  setTasks(prev => prev.filter(t => t._id !== task._id));
+
+  try {
+    await api.delete(`/rooms/${roomId}/tasks/${task._id}`);
+  } catch (err) {
+    // 2️⃣ Restore if fails
+    setTasks(previousTasks);
+  }
+}}
+        className="
+  text-amber-600
+  hover:text-red-500
+  transition
+  text-lg
+  font-bold
+  ml-3
+"
       >
         ×
       </button>
@@ -251,25 +336,45 @@ function RoomView() {
   ))}
 </div>
 
-<motion.div
-  animate={{ scale: showTasks ? 0.99 : 1 }}
-  transition={{ duration: 0.2 }}
-  className="flex-1 flex flex-col"
-></motion.div>
+
 
 {/* Add Task (Bottom) */}
 <div className="mt-4 pt-3 border-t flex gap-2">
   <input
     placeholder="Add a task..."
-    className="flex-1 border rounded px-2 py-1 text-sm"
+    className="flex-1 rounded-lg border border-amber-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition"
     onKeyDown={async (e) => {
-      if (e.key === "Enter" && e.target.value.trim()) {
-        await api.post(`/rooms/${roomId}/tasks`, {
-          text: e.target.value
-        });
-        e.target.value = "";
-      }
-    }}
+  if (e.key === "Enter" && e.target.value.trim()) {
+    const text = e.target.value.trim();
+
+    // Temporary fake ID
+    const tempId = "temp-" + Date.now();
+
+    const optimisticTask = {
+      _id: tempId,
+      text,
+      completed: false,
+      createdBy: { username: "You" }
+    };
+
+    // 1️⃣ Add immediately
+    setTasks(prev => [...prev, optimisticTask]);
+
+    e.target.value = "";
+
+    try {
+      const res = await api.post(`/rooms/${roomId}/tasks`, { text });
+
+      // 2️⃣ Replace temp task with real one
+      setTasks(prev =>
+        prev.map(t => (t._id === tempId ? res.data : t))
+      );
+    } catch (err) {
+      // 3️⃣ Remove if failed
+      setTasks(prev => prev.filter(t => t._id !== tempId));
+    }
+  }
+}}
   />
 </div>
             
@@ -288,67 +393,91 @@ function RoomView() {
     className="flex-1 flex flex-col"
   >
 
-    {/* HEADER */}
-    <div className="flex justify-between items-center px-8 py-4 bg-white/80 backdrop-blur-md shadow-md">
-      <div className="flex items-center gap-6">
-        <h1 className="text-2xl font-bold text-amber-700">Notesy</h1>
-        <div className="bg-yellow-100 px-4 py-2 rounded-lg shadow">
-          {room?.name}
-        </div>
-      </div>
+   {/* HEADER */}
+<div className="flex items-center px-8 py-4 bg-white/80 backdrop-blur-md shadow-md">
 
-      <div className="flex items-center gap-6 max-w-xl overflow-x-auto">
-        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full whitespace-nowrap">
-          {onlineUsers.length} online
-        </span>
+  {/* LEFT */}
+  <div className="flex items-center gap-6">
+    <h1 className="text-2xl font-bold text-amber-700 flex items-center gap-3">
+      Notesy
+      <span
+        onClick={() => setShowBetaNotice(true)}
+        className="text-xs px-2 py-1 bg-amber-500 text-white rounded-full tracking-wider shadow-sm cursor-pointer hover:scale-105 hover:shadow-md transition"
+      >
+        BETA
+      </span>
+    </h1>
 
-        <div className="flex items-center gap-3 overflow-x-auto max-w-md">
-          {room?.members?.map(member => {
-            const isOnline = onlineUsers.includes(String(member._id));
+    <div className="bg-yellow-100 px-4 py-2 rounded-lg shadow">
+      {room?.name}
+    </div>
+  </div>
 
-            return (
-              <div
-                key={member._id}
-                className="px-3 py-1 bg-amber-200 rounded-full text-sm whitespace-nowrap flex items-center gap-2 shadow-sm"
-              >
-                <span>{member.username}</span>
+  {/* CENTER */}
+  <div className="flex-1 flex justify-center px-6">
+    <div className="max-w-[650px] w-full">
+      <div className="flex items-center gap-3 overflow-x-auto scroll-smooth scrollbar-hide">
+        {room?.members?.map(member => {
+          const isOnline = onlineUsers.includes(String(member._id));
 
-                {isOnline && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 400 }}
-                    className="w-2.5 h-2.5 bg-green-500 rounded-full"
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
+          return (
+            <div
+              key={member._id}
+              className="px-4 py-1.5 bg-amber-200 rounded-full text-sm font-medium whitespace-nowrap flex items-center gap-2 shadow-sm"
+            >
+              <span>{member.username}</span>
 
-        <button
-          onClick={() => setShowTasks(prev => !prev)}
-          className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg whitespace-nowrap"
-        >
-          Room Tasks
-        </button>
-
-        <button
-          onClick={() => setShowActivity(true)}
-          className="px-4 py-2 bg-gray-200 rounded-lg whitespace-nowrap"
-        >
-          Activity
-        </button>
-
-        <button
-          onClick={() => setShowInvite(true)}
-          className="px-3 py-1 bg-gray-300 rounded-full whitespace-nowrap"
-        >
-          +
-        </button>
+              {isOnline && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                  className="w-2.5 h-2.5 bg-green-500 rounded-full"
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
+  </div>
 
+  {/* RIGHT */}
+  <div className="flex items-center gap-3 ml-auto">
+    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full whitespace-nowrap">
+      {onlineUsers.length} online
+    </span>
+
+    <button
+      onClick={() => setShowTasks(prev => !prev)}
+      className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg whitespace-nowrap"
+    >
+      Tasks
+    </button>
+
+    <button
+      onClick={() => setShowActivity(true)}
+      className="px-4 py-2 bg-gray-200 rounded-lg whitespace-nowrap"
+    >
+      Activity
+    </button>
+
+    <button
+      onClick={() => setShowBetaNotice(true)}
+      className="px-4 py-2 bg-amber-100 text-amber-800 rounded-lg whitespace-nowrap hover:bg-amber-200 transition flex items-center gap-2"
+    >
+      Contact
+    </button>
+
+    <button
+      onClick={() => setShowInvite(true)}
+      className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
+    >
+      Invite
+    </button>
+  </div>
+
+</div>
     {/* NOTES GRID */}
     <div className="p-8 flex flex-wrap gap-8 justify-start">
       <AnimatePresence>
@@ -368,7 +497,7 @@ function RoomView() {
             roomId={roomId}
             editingUsers={editingUsers}
             socket={socket}
-            currentUserId={localStorage.getItem("userId")}
+            currentUserId={currentUserId}
           />
         ))}
       </AnimatePresence>
@@ -413,6 +542,62 @@ function RoomView() {
           onClose={() => setShowActivity(false)}
           renderActivityText={renderActivityText}
         />
+        {showBetaNotice && (
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+   <div className="bg-white w-[460px] rounded-2xl p-7 shadow-2xl border border-amber-200 relative">
+
+  <div
+        onClick={() => setShowBetaNotice(false)}
+        className="absolute top-4 right-4 text-xs px-2 py-1 bg-amber-500 text-white rounded-full tracking-wide cursor-pointer hover:scale-105 transition"
+      >
+        BETA
+      </div>
+
+  <h2 className="text-xl font-semibold text-amber-800 mb-4">
+    Welcome to Notesy
+  </h2>
+
+  <p className="text-sm text-gray-600 leading-relaxed mb-4">
+    You're using an early version of Notesy.  
+    Create rooms, collaborate in real-time with friends, and manage notes together inside shared spaces.
+  </p>
+
+  <p className="text-sm text-gray-500 mb-5">
+    We're actively improving the experience based on feedback.  
+    If something feels off, that insight helps shape the product.
+  </p>
+
+  <div className="text-xs text-gray-500 mb-6">
+    Feedback or suggestions:
+    <div className="mt-2 flex gap-4">
+      <a
+        href="mailto:SumedhGaikwad.dev@gmail.com"
+        className="underline hover:text-amber-700 transition"
+      >
+        Email :- SumedhGaikwad.dev@gmail.com
+      </a>
+      <a
+        href="https://www.linkedin.com/in/sumedh-gaikwad-8b95292a6"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline hover:text-amber-700 transition"
+      >
+        LinkedIn
+      </a>
+    </div>
+  </div>
+
+  <div className="flex justify-end">
+    <button
+      onClick={closeBetaNotice}
+      className="px-5 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-lg shadow hover:shadow-md hover:scale-105 transition-all duration-200"
+    >
+      Got it
+    </button>
+  </div>
+</div>
+  </div>
+)}
 
         </motion.div>
       

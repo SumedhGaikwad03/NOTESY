@@ -74,6 +74,15 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Hide horizontal scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
 .animate-floatSlow { animation: floatSlow 8s ease-in-out infinite; }
 .animate-floatMedium { animation: floatMedium 10s ease-in-out infinite; }
 .animate-floatFast { animation: floatFast 6s ease-in-out infinite; }
