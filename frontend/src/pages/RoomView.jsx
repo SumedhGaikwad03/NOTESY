@@ -44,6 +44,8 @@ function RoomView() {
 
   const [showBetaNotice, setShowBetaNotice] = useState(false);
 
+  const [isAdding, setIsAdding] = useState(false);
+
  
 
   /* ---------------- FETCHERS ---------------- */
@@ -165,8 +167,8 @@ socket.on("task_created", (task) => {
     }
 
     if (!prev.some(t => t._id === task._id)) {
-      return [task, ...prev];
-    }
+  return [task, ...prev.filter(t => !t.isOptimistic)];
+}
 
     return prev;
   });
@@ -329,12 +331,24 @@ socket.on("task_deleted", (taskId) => {
 
       <button
   onClick={async () => {
-    try {
-      await api.delete(`/rooms/${roomId}/tasks/${task._id}`);
-    } catch (err) {
-      console.error("Delete failed:", err);
-    }
-  }}
+  const taskId = task._id;
+  const isOptimistic = task.isOptimistic;
+
+  // 1️⃣ Remove instantly
+  setTasks(prev => prev.filter(t => t._id !== taskId));
+
+  // 2️⃣ If optimistic task, do NOT call backend
+  if (isOptimistic) return;
+
+  try {
+    await api.delete(`/rooms/${roomId}/tasks/${taskId}`);
+  } catch (err) {
+    console.error("Delete failed:", err);
+
+    // 3️⃣ Re-sync if backend fails
+    fetchTasks();
+  }
+}}
   className="
     text-amber-600
     hover:text-red-500
@@ -359,16 +373,18 @@ socket.on("task_deleted", (taskId) => {
     className="flex-1 rounded-lg border border-amber-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition"
     onKeyDown={async (e) => {
   if (e.key === "Enter" && e.target.value.trim()) {
+    if (isAdding) return;
+     setIsAdding(true);
     const text = e.target.value.trim();
 
     // Temporary fake ID
     const tempId = "temp-" + Date.now();
 
    const optimisticTask = {
-  _id: "temp-" + Date.now(),
+  _id: tempId,
   text,
   completed: false,
-  createdBy: { _id: currentUserId, username: "You" },
+  createdBy: { _id: currentUserId },
   isOptimistic: true
 };
 
@@ -384,10 +400,15 @@ socket.on("task_deleted", (taskId) => {
       setTasks(prev =>
         prev.map(t => (t._id === tempId ? res.data : t))
       );
+     
+
     } catch (err) {
       // 3️⃣ Remove if failed
       setTasks(prev => prev.filter(t => t._id !== tempId));
     }
+     finally {
+  setIsAdding(false);
+}
   }
 }}
   />
