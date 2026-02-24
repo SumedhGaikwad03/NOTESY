@@ -38,4 +38,9 @@ export const signup = (data) =>
 export const login = (data) =>
   api.post("/auth/login", data);
 
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 export default api;

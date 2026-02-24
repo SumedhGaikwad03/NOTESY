@@ -39,6 +39,10 @@ app.use('/api/auth', authRouter);
 app.use("/api/rooms", taskrouter);
 app.use('/api/rooms', roomRouter);
 
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 
 // 🔥 Create HTTP server (required for socket.io)
 const server = http.createServer(app);
