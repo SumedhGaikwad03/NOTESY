@@ -38,10 +38,7 @@ app.use('/api/notes', notesRouter);
 app.use('/api/auth', authRouter);
 app.use("/api/rooms", taskrouter);
 app.use('/api/rooms', roomRouter);
-
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
-});
+app.use("/api/health",taskrouter);
 
 
 // 🔥 Create HTTP server (required for socket.io)
