@@ -231,7 +231,7 @@ socket.on("task_deleted", (taskId) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen relative overflow-hidden"
+      className="min-h-screen relative overflow-x-hidden"
     >
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#fdf6e3] via-[#fef9e7] to-[#fffdf5]" />
@@ -245,15 +245,44 @@ socket.on("task_deleted", (taskId) => {
 
       {/* Sidebar */}
       <AnimatePresence>
-        {showTasks && (
-          <motion.div
-             initial={{ width: 0 }}
-      animate={{ width: 320 }}
-      exit={{ width: 0 }}
-      transition={{ type: "spring", stiffness: 260, damping: 30 }}
-      className="overflow-hidden bg-white border-r shadow-xl shrink-0"
-          >
-            <h2 className="font-semibold mb-4">Room Tasks</h2>
+  {showTasks && (
+    <>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setShowTasks(false)}
+        className="fixed inset-0 bg-black/30 md:hidden z-30"
+      />
+
+      {/* Sidebar */}
+      <motion.div
+        initial={{ x: -320 }}
+        animate={{ x: 0 }}
+        exit={{ x: -320 }}
+        transition={{ type: "spring", stiffness: 260, damping: 30 }}
+        className="fixed inset-y-0 left-0 w-full md:w-[320px] bg-white shadow-2xl border-r border-amber-100 flex flex-col z-40"
+      >
+            <div className="flex items-center justify-between mb-4 px-4 pt-4">
+  <div className="flex items-center gap-2">
+    <div className="w-2 h-6 bg-gradient-to-b from-amber-500 to-yellow-400 rounded-full" />
+    <h2 className="text-lg font-semibold text-amber-800">
+      Room Tasks
+    </h2>
+  </div>
+  
+
+  <button
+    onClick={() => setShowTasks(false)}
+    className="text-amber-600 hover:text-red-500 text-xl font-bold transition"
+  >
+    ×
+  </button>
+</div>
+
+
+
 
 {/* Task List */}
 <div className="flex-1 overflow-y-auto space-y-2 ">
@@ -367,7 +396,7 @@ socket.on("task_deleted", (taskId) => {
 
 
 {/* Add Task (Bottom) */}
-<div className="mt-4 pt-3 border-t flex gap-2">
+<div className="mt-auto pt-4 border-t border-amber-200 p-4 bg-amber-50/40">
   <input
     placeholder="Add a task..."
     className="flex-1 rounded-lg border border-amber-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition"
@@ -413,11 +442,10 @@ socket.on("task_deleted", (taskId) => {
 }}
   />
 </div>
-            
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+</motion.div>
+</>
+)}
+</AnimatePresence>
       
 
   
@@ -430,10 +458,11 @@ socket.on("task_deleted", (taskId) => {
   >
 
    {/* HEADER */}
-<div className="flex items-center px-8 py-4 bg-white/80 backdrop-blur-md shadow-md">
+<div className="flex flex-col md:flex-row md:items-center px-4 md:px-8 py-4 bg-white/80 backdrop-blur-md shadow-md gap-4 md:gap-0">
+<div className="h-px bg-gradient-to-r from-transparent via-amber-200 to-transparent mb-4" />
 
   {/* LEFT */}
-  <div className="flex items-center gap-6">
+ <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
     <h1 className="text-2xl font-bold text-amber-700 flex items-center gap-3">
       Notesy
       <span
@@ -450,8 +479,8 @@ socket.on("task_deleted", (taskId) => {
   </div>
 
   {/* CENTER */}
-  <div className="flex-1 flex justify-center px-6">
-    <div className="max-w-[650px] w-full">
+  <div className="w-full md:flex-1 md:flex md:justify-center px-0 md:px-6">
+    <div className="w-full max-w-full md:max-w-[650px]">
       <div className="flex items-center gap-3 overflow-x-auto scroll-smooth scrollbar-hide">
         {room?.members?.map(member => {
           const isOnline = onlineUsers.includes(String(member._id));
@@ -479,7 +508,7 @@ socket.on("task_deleted", (taskId) => {
   </div>
 
   {/* RIGHT */}
-  <div className="flex items-center gap-3 ml-auto">
+  <div className="flex flex-wrap md:flex-nowrap items-center gap-2 md:gap-3 w-full md:w-auto md:ml-auto justify-between md:justify-end">
     <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full whitespace-nowrap">
       {onlineUsers.length} online
     </span>
@@ -488,7 +517,7 @@ socket.on("task_deleted", (taskId) => {
       onClick={() => setShowTasks(prev => !prev)}
       className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg whitespace-nowrap"
     >
-      Tasks
+      To-do List
     </button>
 
     <button
@@ -515,7 +544,7 @@ socket.on("task_deleted", (taskId) => {
 
 </div>
     {/* NOTES GRID */}
-    <div className="p-8 flex flex-wrap gap-8 justify-start">
+   <div className="p-4 md:p-8 flex flex-wrap gap-4 md:gap-8 justify-center md:justify-start">
       <AnimatePresence>
         {notes.map(note => (
           <NoteCard
