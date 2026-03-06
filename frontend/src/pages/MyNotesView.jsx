@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from "react";
+ // this is an old redundant file, we can remove it and just use the close button below
+ // this is of the old single user version of the system, we can remove it and just use the close button below
+ 
+ import React, { useState, useEffect } from "react";
 import api from "../utils/api";
 import Sidebar from "../components/Sidebar";
 import "../index.css";

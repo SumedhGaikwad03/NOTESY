@@ -139,7 +139,7 @@ function RoomView() {
     const hasSeen = localStorage.getItem("notesy_beta_seen");
   if (!hasSeen) {
     setShowBetaNotice(true);
-  } 
+  } // this is  just for frist time when user opens the app, after that it will not show because we set a flag in localStorage
 
   
     if (socket.connected) joinRoom();
@@ -216,7 +216,7 @@ socket.on("task_deleted", (taskId) => {
         return `created note "${item.meta?.title}"`;
       case "note_updated":
         return `updated note "${item.meta?.title}"`;
-      case "note_deleted":
+      case "note_deleted":9
         return `deleted note "${item.meta?.title}"`;
       case "member_added":
         return `added member "${item.meta?.username}"`;
@@ -423,16 +423,18 @@ socket.on("task_deleted", (taskId) => {
     e.target.value = "";
 
     try {
-      const res = await api.post(`/rooms/${roomId}/tasks`, { text });
+      const res = await api.post(`/rooms/${roomId}/tasks`, { text }); // here backend creates real task and returns it with real ID
+
+
 
       // 2️⃣ Replace temp task with real one
       setTasks(prev =>
         prev.map(t => (t._id === tempId ? res.data : t))
       );
-     
+      // here just thw respose forom backend is 
 
     } catch (err) {
-      // 3️⃣ Remove if failed
+      // 3️⃣ Remove if failed for the frontend ui 
       setTasks(prev => prev.filter(t => t._id !== tempId));
     }
      finally {
@@ -514,7 +516,8 @@ socket.on("task_deleted", (taskId) => {
     </span>
 
     <button
-      onClick={() => setShowTasks(prev => !prev)}
+      onClick={() => setShowTasks(prev => !prev)} // it jusrt takes the current boolean value and flips it as 
+      //one click to rendr other to close 
       className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg whitespace-nowrap"
     >
       To-do List
@@ -540,6 +543,8 @@ socket.on("task_deleted", (taskId) => {
     >
       Invite
     </button>
+     
+  
   </div>
 
 </div>

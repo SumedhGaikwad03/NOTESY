@@ -21,8 +21,9 @@ function NoteCard({
 
   const editingUserId = editingUsers[note._id];
   const isBeingEditedByOther =
-    editingUserId && editingUserId !== currentUserId;
-
+    editingUserId && editingUserId !== currentUserId;  // first the right part is evaluated, if editingUserId is falsy (undefined) then the whole expression is falsy, 
+    // if it's truthy then it checks if it's not equal to currentUserId to determine if it's being edited by another user
+   
   return (
     <motion.div
       layout

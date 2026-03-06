@@ -28,6 +28,18 @@ const RoomSchema = new mongoose.Schema({
 
 }
 );
+RoomSchema.pre("findOneAndDelete", async function (next) {
+
+  const room = await this.model.findOne(this.getFilter());
+
+  if (room) {
+    await mongoose.model("Note").deleteMany({ roomId: room._id });
+    await mongoose.model("Task").deleteMany({ roomId: room._id });
+  }
+
+  next();
+});
+
 
 const Room = mongoose.model("Room",RoomSchema);
 

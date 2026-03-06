@@ -93,6 +93,9 @@ export const handleUpdateNote = async (id, updatedNote, setNotes) => {
   }
 };
 
+//export const handelExitRoom =(socket, roomId, navigate) => {
+
+
 // export const handleEditClick = (note) => {
 //   setEditingNote(note);
 //   setTitle(note.title);

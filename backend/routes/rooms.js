@@ -210,6 +210,43 @@ router.put("/:roomId/add-member", authMiddleware, async (req, res) => {
   }
 });
 
+//remove member from room
+router.delete("/:roomId/leave", authMiddleware, async (req, res) => {
+   const { roomId } = req.params;
+    const userId = req.userId;
+  try {
+   const room = await Room.findById(roomId);
+    if (!room.members.includes(userId)) {
+  return res.status(403).json({ message: "You are not a member of this room" });
+}
+
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+
+    room.members = room.members.filter(
+      member => member.toString() !== userId
+    );
+
+    const io = getIO();
+    io.to(roomId).emit("memberLeft", { roomId, userId });
+
+     // if no members left → delete room
+    if (room.members.length === 0) {
+      await Room.findByIdAndDelete(roomId);
+      return res.json({ message: "Room deleted (last member left)" });
+    }
+
+
+    await room.save();
+
+    res.json({ message: "Left room successfully" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
  
 
 
