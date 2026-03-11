@@ -78,26 +78,67 @@ function RoomView() {
   /* ---------------- NOTE ACTIONS ---------------- */
 
   const createNote = async () => {
-    if (!title.trim() || !content.trim()) return;
-    await api.post("/notes/add", { title, content, roomId });
-    setTitle("");
-    setContent("");
-    setShowEditor(false);
+
+  if (!title.trim() || !content.trim()) return;
+  const tempId = "temp-" + Date.now()  
+  const optimisticNote = {
+    _id: tempId,
+    title:title.trim(),
+    content:content.trim(),
+    roomId,
+    createdBy: { _id: currentUserId },
+    isOptimistic: true
   };
+  setNotes(prev => [optimisticNote, ...prev]);
+
+ try {
+    //if (!title.trim() || !content.trim()) return;
+    const res = await api.post("/notes/add", { title, content, roomId });
+    setNotes(prev => prev.map(note => note._id === tempId ? res.data : note));
+
+    setTitle(""); // cleam up starts from here 
+    setContent("");
+    setShowEditor(false); 
+  }
+  catch (err) {
+    console.error("Error creating note:", err);
+    setNotes(prev => prev.filter(note => note._id !== tempId));
+  } };
 
   const deleteNote = async (id) => {
+
+    //const deletedNote = notes.find(n=> n._id ===id);
+    const prevNotes=notes;
+
+    setNotes(prev => prev.filter(note => note._id !== id));
+    try {
     await api.delete(`/notes/delete/${id}`);
-    fetchActivity();
-  };
+    fetchActivity();} 
+    catch (err){
+      console.error("Error deleting note:", err);
+      setNotes(prevNotes);
+  }};
 
   const saveEdit = async (id) => {
+
+    const prevNotes = notes;
+
+    setNotes(prev => prev.map(note => note._id === id ? { ...note, title: editTitle, content: editContent } : note));
+    setEditingId(null);
+    try {
     await api.put(`/notes/update/${id}`, {
       title: editTitle,
       content: editContent
     });
-    setEditingId(null);
+    //setEditingId(null);
     fetchActivity();
-  };
+
+  } catch (err) {
+    console.error("Error saving edit:", err);
+    setNotes(prevNotes);
+    setEditingId(null);
+  }
+};
 
   const addMember = async () => {
   try {
@@ -148,9 +189,24 @@ function RoomView() {
     const refreshNotes = () => fetchNotes();
     const refreshTasks = () => fetchTasks();
 
-    socket.on("note_created", refreshNotes);
-    socket.on("note_updated", refreshNotes);
-    socket.on("note_deleted", refreshNotes);
+    socket.on("note_created", (note) => {
+      setNotes(prev => {
+        if (prev.some(n=> n._id === note._id))return prev;
+        const optimistic= prev.find(n => n.isOptimistic && n.title === note.title )
+        if(optimistic){
+          return prev.map(n => n._id === optimistic._id ? note : n)
+        }
+        return [note, ...prev];
+
+      })
+    });
+    socket.on("note_updated", (note) => {
+      setNotes(prev => prev.map(n => n._id === note._id ? note : n));
+  
+    });
+    socket.on("note_deleted", (noteId) => {
+      setNotes(prev => prev.filter(n => n._id !== noteId));
+    });
 socket.on("task_created", (task) => {
   setTasks(prev => {
     // Find matching optimistic task by text + creator
