@@ -610,6 +610,7 @@ socket.on("task_deleted", (taskId) => {
         {notes.map(note => (
           <NoteCard
             key={note._id}
+            layoutId={note._id}  
             note={note}
             editingId={editingId}
             setEditingId={setEditingId}

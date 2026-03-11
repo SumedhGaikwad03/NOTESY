@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 
 function NoteCard({
   note,
+  layoutId,
   editingId,
   setEditingId,
   editTitle,
@@ -27,6 +28,7 @@ function NoteCard({
   return (
     <motion.div
       layout
+       layoutId={note._id}
       initial={{ opacity: 0, scale: 0.9, y: 15 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.8 }}
