@@ -90,15 +90,15 @@ function RoomView() {
     isOptimistic: true
   };
   setNotes(prev => [optimisticNote, ...prev]);
+   setTitle(""); // cleam up starts from here 
+    setContent("");
+    setShowEditor(false); 
 
  try {
     //if (!title.trim() || !content.trim()) return;
     const res = await api.post("/notes/add", { title, content, roomId });
     setNotes(prev => prev.map(note => note._id === tempId ? res.data : note));
 
-    setTitle(""); // cleam up starts from here 
-    setContent("");
-    setShowEditor(false); 
   }
   catch (err) {
     console.error("Error creating note:", err);
