@@ -19,8 +19,7 @@ function InviteModal({ show, inviteEmail, setInviteEmail, onClose, onInvite, err
 )}
 
         <div className="flex justify-end gap-2">
-          <button onClick={onClose}>Cancel</button> // this is a redundant button, we can remove it and just use the close button below 
-          
+          <button onClick={onClose}>Cancel</button> 
           <button
             onClick={onInvite}
             disabled = {!inviteEmail.trim()}
