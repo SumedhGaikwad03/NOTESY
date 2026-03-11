@@ -42,10 +42,14 @@ function NoteEditorModal({
           </button>
 
           <button
-            onClick={onSave}
+            onClick={() => {
+              onSave();
+              setShowEditor(false);
+            }}
             className="px-4 py-2 rounded bg-amber-500 hover:bg-amber-600 text-white"
           >
             Add Note
+
           </button>
         </div>
 
