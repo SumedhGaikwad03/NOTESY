@@ -2,25 +2,47 @@ import React from "react";
 
 function NoteEditor({ title, content, setTitle, setContent }) {
   return (
-    <div className="flex-1 flex flex-col p-6">
+    <div className="flex-1 flex flex-col h-full px-6 py-5">
+      <style>{`
+        .note-title-input {
+          width: 100%; border: none; outline: none; background: transparent;
+          font-size: 22px; font-weight: 700; color: #1c1917;
+          font-family: 'Playfair Display', serif;
+          padding-bottom: 10px;
+          border-bottom: 2px solid #fde68a;
+          transition: border-color 0.2s;
+          margin-bottom: 16px;
+        }
+        .note-title-input:focus { border-bottom-color: #f97316; }
+        .note-title-input::placeholder { color: #d6d3d1; font-weight: 600; }
 
-      {/* Title */}
+        .note-content-input {
+          flex: 1; width: 100%; border: none; outline: none; background: transparent;
+          resize: none; font-size: 15px; line-height: 1.8; color: #44403c;
+          font-family: 'DM Sans', sans-serif;
+        }
+        .note-content-input::placeholder { color: #d6d3d1; }
+      `}</style>
+
       <input
         type="text"
-        placeholder="Note title..."
+        placeholder="Note title…"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="text-2xl font-bold mb-4 border-b border-yellow-300 outline-none focus:border-amber-500 transition-colors"
+        className="note-title-input"
       />
 
-      {/* Content */}
       <textarea
-        placeholder="Start writing your note..."
+        placeholder="Start writing your note…"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        className="flex-1 resize-none outline-none text-lg leading-relaxed"
+        className="note-content-input"
       />
 
+      {/* Character hint */}
+      <div className="flex justify-end mt-2">
+        <span className="text-xs text-amber-300">{content.length} chars</span>
+      </div>
     </div>
   );
 }
