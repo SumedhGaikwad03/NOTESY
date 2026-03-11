@@ -19,7 +19,9 @@ function Login() {
 
     try {
       const res = await login({ email, password });
+      console.log(res.data); 
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("username", res.data.username);
       navigate("/rooms");
     } catch {
       setError("Invalid email or password");
