@@ -14,12 +14,32 @@ function Rooms() {
 
   const navigate = useNavigate();
 
-  // Fix: read username inside useEffect so it's always fresh from localStorage
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     if (storedUsername) setUsername(storedUsername);
   }, []);
 
+  /* ── GREETING ── */
+  const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const getInitials = (name) => {
+    if (!name) return "?";
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  /* ── LOGOUT ── */
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    navigate("/login");
+  };
+
+  /* ── ROOMS ── */
   const createRoom = async (name) => {
     try {
       const res = await api.post("/rooms/create", { name });
@@ -54,169 +74,411 @@ function Rooms() {
     fetchRooms();
   }, []);
 
-  const handleRoomClick = (roomId) => {
-    navigate(`/rooms/${roomId}`);
-  };
+  const handleRoomClick = (roomId) => navigate(`/rooms/${roomId}`);
 
-  const getInitials = (name) => {
-    if (!name) return "?";
-    return name.slice(0, 2).toUpperCase();
-  };
-
-  // Soft warm colors for room cards
-  const cardAccents = [
-    { bg: "from-amber-100 to-yellow-50", dot: "bg-amber-400", badge: "bg-amber-100 text-amber-700" },
-    { bg: "from-orange-100 to-amber-50", dot: "bg-orange-400", badge: "bg-orange-100 text-orange-700" },
-    { bg: "from-yellow-100 to-lime-50", dot: "bg-yellow-500", badge: "bg-yellow-100 text-yellow-700" },
-    { bg: "from-rose-100 to-pink-50", dot: "bg-rose-400", badge: "bg-rose-100 text-rose-700" },
-    { bg: "from-sky-100 to-blue-50", dot: "bg-sky-400", badge: "bg-sky-100 text-sky-700" },
-    { bg: "from-violet-100 to-purple-50", dot: "bg-violet-400", badge: "bg-violet-100 text-violet-700" },
-  ];
-
+  /* ── LOADING ── */
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-100 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-400 animate-pulse" />
-          <p className="text-amber-700 font-medium text-sm tracking-wide">Loading workspace…</p>
+      <>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+          @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.4;} }
+        `}</style>
+        <div style={{ minHeight:"100vh", background:"linear-gradient(135deg,#fffbeb 0%,#fef3c7 35%,#fff7ed 65%,#ffedd5 100%)", display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:"16px" }}>
+          <div style={{ width:"44px", height:"44px", borderRadius:"13px", background:"linear-gradient(135deg,#fbbf24,#f97316)", animation:"pulse 1.4s ease-in-out infinite" }} />
+          <p style={{ fontFamily:"'DM Sans',sans-serif", color:"#92400e", fontSize:"14px", fontWeight:500 }}>Loading your workspace…</p>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-100 px-6 md:px-12 py-10">
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-      {/* ── HEADER ── */}
-      <header className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white/90 backdrop-blur-md shadow-lg shadow-amber-100/60 rounded-2xl px-6 py-4 mb-10 border border-white/60">
+        .atrio-rooms * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
 
-        {/* Left: logo + greeting */}
-        <div className="flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-extrabold text-lg shadow-md shadow-amber-200">
-            N
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-gray-800 leading-tight">Notesy Workspace</h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Welcome back,{" "}
-              <span className="text-amber-600 font-semibold">
-                {username || "Guest"}
-              </span>
-            </p>
-          </div>
-        </div>
+        /* ── PAGE ── */
+        .atrio-rooms {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 35%, #fff7ed 65%, #ffedd5 100%);
+          position: relative;
+          overflow-x: hidden;
+        }
 
-        {/* Center: stats */}
-        <div className="hidden md:flex items-center gap-6">
-          <div className="flex flex-col items-center">
-            <span className="text-xl font-bold text-amber-600">{rooms.length}</span>
-            <span className="text-[11px] text-gray-400 uppercase tracking-wider">Rooms</span>
-          </div>
-          <div className="h-8 w-px bg-gray-200 rounded-full" />
-          <div className="flex flex-col items-center">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
-              <span className="text-sm font-semibold text-emerald-600">Active</span>
-            </span>
-            <span className="text-[11px] text-gray-400 uppercase tracking-wider">Status</span>
-          </div>
-        </div>
+        /* ── BLOBS ── */
+        @keyframes blob1 { 0%,100%{transform:translate(0,0) scale(1) rotate(0deg);}25%{transform:translate(60px,-80px) scale(1.1) rotate(8deg);}50%{transform:translate(-40px,60px) scale(0.95) rotate(-5deg);}75%{transform:translate(80px,40px) scale(1.05) rotate(12deg);} }
+        @keyframes blob2 { 0%,100%{transform:translate(0,0) scale(1);}20%{transform:translate(-70px,50px) scale(1.08);}50%{transform:translate(50px,-70px) scale(0.92);}80%{transform:translate(-30px,-40px) scale(1.12);} }
+        @keyframes blob3 { 0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(40px,80px) scale(1.15);}66%{transform:translate(-60px,-30px) scale(0.88);} }
 
-        {/* Right: actions */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-semibold rounded-xl hover:from-amber-500 hover:to-orange-600 transition-all shadow-md shadow-amber-200 active:scale-95"
-          >
-            <span className="text-base leading-none">+</span> New Room
-          </button>
-          <button className="px-3 py-2 bg-gray-100 text-gray-600 text-sm rounded-xl hover:bg-gray-200 transition font-medium">
-            Settings
-          </button>
-        </div>
+        .blob { position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:0; }
+        .blob-1 { width:600px; height:600px; background:rgba(251,191,36,0.3); top:-200px; left:-200px; animation:blob1 14s ease-in-out infinite; }
+        .blob-2 { width:600px; height:600px; background:rgba(249,115,22,0.22); bottom:-200px; right:-200px; animation:blob2 17s ease-in-out infinite; }
+        .blob-3 { width:500px; height:500px; background:rgba(253,224,71,0.25); top:30%; left:50%; animation:blob3 11s ease-in-out infinite; }
 
-      </header>
+        /* ── SHAPES ── */
+        @keyframes drift1 { 0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-30px) rotate(10deg);} }
+        @keyframes drift2 { 0%,100%{transform:translateY(0) translateX(0);}50%{transform:translateY(20px) translateX(15px);} }
+        @keyframes floatC { 0%,100%{transform:translateY(0);opacity:0.5;}50%{transform:translateY(-18px);opacity:0.8;} }
 
-      {/* ── USER AVATAR BANNER ── */}
-      {username && (
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center text-sm font-bold shadow">
-            {getInitials(username)}
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-700">{username}</p>
-            <p className="text-xs text-gray-400">Your rooms are listed below</p>
-          </div>
-        </div>
-      )}
+        .shape { position:fixed; pointer-events:none; z-index:0; }
+        .sq1{width:60px;height:60px;background:rgba(255,255,255,0.4);border:1.5px solid rgba(255,255,255,0.65);border-radius:14px;top:10%;left:6%;backdrop-filter:blur(4px);animation:drift1 7s ease-in-out infinite;}
+        .sq2{width:40px;height:40px;background:rgba(251,191,36,0.25);border:1.5px solid rgba(251,191,36,0.45);border-radius:10px;bottom:20%;right:6%;animation:drift2 9s ease-in-out infinite;}
+        .sq3{width:28px;height:28px;background:rgba(249,115,22,0.18);border:1.5px solid rgba(249,115,22,0.35);border-radius:8px;top:6%;right:16%;animation:drift1 8s ease-in-out infinite;}
+        .c1{width:16px;height:16px;background:rgba(249,115,22,0.45);border-radius:50%;top:28%;right:4%;animation:floatC 5s ease-in-out infinite;}
+        .c2{width:10px;height:10px;background:rgba(251,191,36,0.55);border-radius:50%;bottom:28%;left:22%;animation:floatC 7s ease-in-out infinite 1s;}
 
-      {/* ── ROOMS GRID ── */}
-      {rooms.length === 0 ? (
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl p-16 text-center border border-white/50 flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center text-3xl">
-            📋
-          </div>
-          <h2 className="text-2xl font-bold text-gray-700">No rooms yet</h2>
-          <p className="text-gray-400 text-sm max-w-xs">
-            Create your first room to start collaborating with your team.
-          </p>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="mt-2 px-6 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-semibold rounded-xl hover:from-amber-500 hover:to-orange-600 transition-all shadow-md shadow-amber-200"
-          >
-            + Create a Room
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rooms.map((room, index) => {
-            const accent = cardAccents[index % cardAccents.length];
-            return (
-              <div
-                key={room._id}
-                onClick={() => handleRoomClick(room._id)}
-                className={`bg-gradient-to-br ${accent.bg} rounded-2xl p-6 shadow-md border border-white/60 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl flex flex-col justify-between group`}
-              >
-                {/* Card Header */}
-                <div className="flex items-start justify-between mb-5">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${accent.dot} shadow-sm`} />
-                    <h3 className="text-base font-bold text-gray-800 leading-tight">
-                      {room.name}
-                    </h3>
+        /* ── CONTENT ── */
+        .rooms-content {
+          position: relative;
+          z-index: 1;
+          padding: 24px 32px 48px;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        /* ── HEADER ── */
+        .rooms-header {
+          position: relative;
+          background: rgba(255,255,255,0.75);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255,255,255,0.6);
+          border-radius: 20px;
+          overflow: hidden;
+          margin-bottom: 36px;
+          box-shadow: 0 4px 24px rgba(194,65,12,0.08), 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+
+        .header-shine {
+          height: 3px;
+          background: linear-gradient(90deg, #fbbf24, #f97316, #ea580c, #f97316, #fbbf24);
+          background-size: 200% auto;
+          animation: shimmer 3s linear infinite;
+        }
+        @keyframes shimmer { 0%{background-position:-200% center;}100%{background-position:200% center;} }
+
+        .header-inner {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 16px;
+          padding: 16px 24px;
+        }
+
+        /* Left */
+        .header-left { display:flex; align-items:center; gap:14px; }
+
+        .logo-mark {
+          width: 42px; height: 42px; border-radius: 12px;
+          background: linear-gradient(135deg, #fbbf24, #f97316);
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 4px 12px rgba(249,115,22,0.35);
+        }
+        .logo-mark span {
+          font-family: 'Playfair Display', serif;
+          font-weight: 800; font-size: 20px; color: white; line-height: 1;
+        }
+        .logo-name {
+          font-family: 'Playfair Display', serif;
+          font-size: 20px; font-weight: 700;
+          color: #1c1917; letter-spacing: -0.3px; line-height: 1;
+        }
+        .logo-name em { font-style:normal; color:#f97316; }
+
+        /* Greeting + avatar */
+        .user-block { display:flex; align-items:center; gap:10px; }
+        .user-avatar {
+          width: 38px; height: 38px; border-radius: 50%;
+          background: linear-gradient(135deg, #fbbf24, #f97316);
+          display: flex; align-items: center; justify-content: center;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 700; font-size: 13px; color: white;
+          flex-shrink: 0;
+          box-shadow: 0 3px 10px rgba(249,115,22,0.3);
+        }
+        .user-text {}
+        .user-greeting {
+          font-size: 11px; color: #a8a29e;
+          text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500;
+        }
+        .user-name {
+          font-size: 16px; font-weight: 700; color: #1c1917;
+          letter-spacing: -0.2px; line-height: 1.2;
+        }
+
+        /* Center stats */
+        .header-center { display:flex; align-items:center; gap:20px; }
+        .stat { display:flex; flex-direction:column; align-items:center; }
+        .stat-value { font-size:20px; font-weight:700; color:#f97316; line-height:1; }
+        .stat-label { font-size:10px; color:#a8a29e; text-transform:uppercase; letter-spacing:0.06em; margin-top:2px; }
+        .stat-divider { width:1px; height:32px; background:rgba(228,228,231,0.8); border-radius:99px; }
+        .status-dot { width:8px; height:8px; border-radius:50%; background:#34d399; animation:pulse 2s ease-in-out infinite; display:inline-block; margin-right:5px; }
+        @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.4;} }
+        .status-text { font-size:13px; font-weight:600; color:#059669; }
+
+        /* Right actions */
+        .header-right { display:flex; align-items:center; gap:10px; }
+
+        .btn-primary {
+          display: flex; align-items: center; gap: 6px;
+          padding: 9px 18px; border-radius: 12px; border: none;
+          background: linear-gradient(135deg, #f97316, #ea580c);
+          color: white; font-family: 'DM Sans', sans-serif;
+          font-size: 13px; font-weight: 600; cursor: pointer;
+          box-shadow: 0 3px 10px rgba(234,88,12,0.3);
+          transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(234,88,12,0.38); }
+        .btn-primary:active { transform:scale(0.97); }
+
+        .btn-logout {
+          padding: 9px 16px; border-radius: 12px;
+          border: 1.5px solid rgba(220,38,38,0.2);
+          background: rgba(254,226,226,0.5);
+          color: #dc2626; font-family: 'DM Sans', sans-serif;
+          font-size: 13px; font-weight: 600; cursor: pointer;
+          transition: background 0.15s, border-color 0.15s, transform 0.15s;
+          display: flex; align-items: center; gap: 5px;
+        }
+        .btn-logout:hover { background:rgba(254,226,226,0.9); border-color:rgba(220,38,38,0.4); transform:translateY(-1px); }
+        .btn-logout:active { transform:scale(0.97); }
+
+        /* ── SECTION LABEL ── */
+        .section-label {
+          font-size: 11px; font-weight: 600; color: #a8a29e;
+          text-transform: uppercase; letter-spacing: 0.08em;
+          margin-bottom: 16px;
+        }
+
+        /* ── ROOM CARDS ── */
+        .rooms-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 18px;
+        }
+
+        .room-card {
+          background: rgba(255,255,255,0.75);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255,255,255,0.65);
+          border-radius: 18px;
+          padding: 22px;
+          cursor: pointer;
+          display: flex; flex-direction: column; justify-content: space-between;
+          transition: transform 0.2s, box-shadow 0.2s;
+          box-shadow: 0 2px 12px rgba(194,65,12,0.06), 0 1px 3px rgba(0,0,0,0.04);
+          animation: cardIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .room-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 12px 32px rgba(194,65,12,0.12), 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        @keyframes cardIn {
+          from { opacity:0; transform:translateY(16px) scale(0.98); }
+          to   { opacity:1; transform:translateY(0) scale(1); }
+        }
+
+        .room-card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; }
+
+        .room-card-icon {
+          width: 40px; height: 40px; border-radius: 11px;
+          background: linear-gradient(135deg, rgba(251,191,36,0.25), rgba(249,115,22,0.2));
+          border: 1px solid rgba(251,191,36,0.3);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 18px; flex-shrink: 0;
+        }
+
+        .room-leave-btn {
+          padding: 4px 10px; border-radius: 8px;
+          border: 1px solid rgba(220,38,38,0.15);
+          background: rgba(254,226,226,0.4);
+          color: #dc2626; font-size: 11px; font-weight: 600;
+          cursor: pointer; font-family: 'DM Sans', sans-serif;
+          transition: background 0.15s, border-color 0.15s;
+        }
+        .room-leave-btn:hover { background:rgba(254,226,226,0.85); border-color:rgba(220,38,38,0.35); }
+
+        .room-name {
+          font-family: 'Playfair Display', serif;
+          font-size: 17px; font-weight: 700;
+          color: #1c1917; letter-spacing: -0.2px;
+          margin-bottom: 6px; line-height: 1.3;
+        }
+
+        .room-meta { font-size: 12px; color: #a8a29e; font-weight: 400; }
+
+        .room-card-bottom {
+          display: flex; align-items: center; justify-content: space-between;
+          padding-top: 14px;
+          border-top: 1px solid rgba(228,228,231,0.6);
+          margin-top: 14px;
+        }
+
+        .room-badge {
+          font-size: 11px; font-weight: 600;
+          padding: 3px 10px; border-radius: 99px;
+          background: rgba(251,191,36,0.18);
+          border: 1px solid rgba(251,191,36,0.4);
+          color: #92400e;
+        }
+
+        .room-open {
+          font-size: 13px; color: #a8a29e; font-weight: 500;
+          transition: color 0.15s, transform 0.15s;
+          display: inline-block;
+        }
+        .room-card:hover .room-open { color: #f97316; transform: translateX(3px); }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+          display: flex; flex-direction: column; align-items: center;
+          justify-content: center; text-align: center;
+          padding: 80px 24px;
+          background: rgba(255,255,255,0.65);
+          backdrop-filter: blur(16px);
+          border: 1px solid rgba(255,255,255,0.6);
+          border-radius: 24px;
+          box-shadow: 0 4px 24px rgba(194,65,12,0.06);
+        }
+        .empty-icon {
+          width: 64px; height: 64px; border-radius: 18px;
+          background: linear-gradient(135deg, rgba(251,191,36,0.2), rgba(249,115,22,0.15));
+          border: 1px solid rgba(251,191,36,0.3);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 28px; margin-bottom: 20px;
+        }
+        .empty-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 22px; font-weight: 700; color: #1c1917;
+          margin-bottom: 8px; letter-spacing: -0.2px;
+        }
+        .empty-sub { font-size: 14px; color: #a8a29e; max-width: 260px; line-height: 1.6; margin-bottom: 24px; }
+      `}</style>
+
+      <div className="atrio-rooms">
+
+        {/* Blobs */}
+        <div className="blob blob-1" />
+        <div className="blob blob-2" />
+        <div className="blob blob-3" />
+
+        {/* Shapes */}
+        <div className="shape sq1" /><div className="shape sq2" />
+        <div className="shape sq3" />
+        <div className="shape c1" /><div className="shape c2" />
+
+        <div className="rooms-content">
+
+          {/* ── HEADER ── */}
+          <header className="rooms-header">
+            <div className="header-shine" />
+            <div className="header-inner">
+
+              {/* Left: logo + user */}
+              <div className="header-left">
+                <div className="logo-mark"><span>A</span></div>
+                <div className="logo-name">Atri<em>o</em></div>
+                <div style={{ width:"1px", height:"32px", background:"rgba(228,228,231,0.7)", margin:"0 4px" }} />
+                <div className="user-block">
+                  <div className="user-avatar">{getInitials(username)}</div>
+                  <div className="user-text">
+                    <div className="user-greeting">{getGreeting()}</div>
+                    <div className="user-name">{username || "Guest"}</div>
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setRoomToLeave(room._id);
-                      setShowLeaveModal(true);
-                    }}
-                    className="text-xs px-2.5 py-1 bg-white/70 text-red-500 border border-red-100 rounded-lg hover:bg-red-50 hover:border-red-200 transition font-medium"
-                  >
-                    Leave
-                  </button>
-                </div>
-
-                {/* Card Body */}
-                <div className="flex items-center gap-2 text-gray-500 text-sm mb-5">
-                  <span>👥</span>
-                  <span>{room.members?.length || 1} collaborator{(room.members?.length || 1) !== 1 ? "s" : ""}</span>
-                </div>
-
-                {/* Card Footer */}
-                <div className="flex justify-between items-center pt-4 border-t border-white/50">
-                  <span className={`text-xs font-semibold px-3 py-1 rounded-full ${accent.badge}`}>
-                    Collaborative
-                  </span>
-                  <span className="text-gray-400 text-sm group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-200">
-                    Open →
-                  </span>
                 </div>
               </div>
-            );
-          })}
+
+              {/* Center: stats */}
+              <div className="header-center">
+                <div className="stat">
+                  <span className="stat-value">{rooms.length}</span>
+                  <span className="stat-label">Rooms</span>
+                </div>
+                <div className="stat-divider" />
+                <div className="stat">
+                  <span className="stat-value" style={{ fontSize:"13px", display:"flex", alignItems:"center" }}>
+                    <span className="status-dot" />
+                    <span className="status-text">Active</span>
+                  </span>
+                  <span className="stat-label">Status</span>
+                </div>
+              </div>
+
+              {/* Right: actions */}
+              <div className="header-right">
+                <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
+                  <span style={{ fontSize:"16px", lineHeight:1 }}>+</span> New Room
+                </button>
+                <button className="btn-logout" onClick={handleLogout}>
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                    <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" stroke="#dc2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Logout
+                </button>
+              </div>
+
+            </div>
+          </header>
+
+          {/* ── ROOMS ── */}
+          {rooms.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">🏛</div>
+              <h2 className="empty-title">No rooms yet</h2>
+              <p className="empty-sub">Create your first room to start collaborating with your team in real time.</p>
+              <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
+                <span style={{ fontSize:"16px", lineHeight:1 }}>+</span> Create a Room
+              </button>
+            </div>
+          ) : (
+            <>
+              <p className="section-label">{rooms.length} room{rooms.length !== 1 ? "s" : ""} · your workspace</p>
+              <div className="rooms-grid">
+                {rooms.map((room, i) => (
+                  <div
+                    key={room._id}
+                    className="room-card"
+                    style={{ animationDelay: `${i * 0.06}s` }}
+                    onClick={() => handleRoomClick(room._id)}
+                  >
+                    <div>
+                      <div className="room-card-top">
+                        <div className="room-card-icon">🏛</div>
+                        <button
+                          className="room-leave-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRoomToLeave(room._id);
+                            setShowLeaveModal(true);
+                          }}
+                        >
+                          Leave
+                        </button>
+                      </div>
+                      <div className="room-name">{room.name}</div>
+                      <div className="room-meta">
+                        {room.members?.length || 1} collaborator{(room.members?.length || 1) !== 1 ? "s" : ""}
+                      </div>
+                    </div>
+
+                    <div className="room-card-bottom">
+                      <span className="room-badge">Collaborative</span>
+                      <span className="room-open">Open →</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
         </div>
-      )}
+      </div>
 
       {/* ── MODALS ── */}
       <CreateRoomModal
@@ -229,7 +491,7 @@ function Rooms() {
         onClose={() => setShowLeaveModal(false)}
         onLeave={() => handleLeaveRoom(roomToLeave)}
       />
-    </div>
+    </>
   );
 }
 

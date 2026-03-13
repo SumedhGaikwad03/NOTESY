@@ -4,7 +4,7 @@ import Note from '../models/note.js';
 import authMiddleware from '../middleware/auth.js';
 import mongoose from 'mongoose';
 import User from '../models/User_Model.js';
-import Activity from '../models/activity.js';
+//import Activity from '../models/activity.js';
 import { getIO } from "../socket.js";
 
 
@@ -185,13 +185,13 @@ router.put("/:roomId/add-member", authMiddleware, async (req, res) => {
       { new: true }
     );
 
-    const activity = await Activity.create({
+    /*const activity = await Activity.create({
       room: roomId,
       user: req.userId,
       type: "member_added",
       targetId: user._id,
       meta: { username: user.username }
-    });
+    });*/
 
     const roomKey = roomId.toString();
 
@@ -200,7 +200,7 @@ router.put("/:roomId/add-member", authMiddleware, async (req, res) => {
       username: user.username
     });
 
-    io.to(roomKey).emit("activity_update", activity);
+    //io.to(roomKey).emit("activity_update", activity);
 
     res.json({ message: "Member added successfully" });
 
@@ -251,7 +251,7 @@ router.delete("/:roomId/leave", authMiddleware, async (req, res) => {
 
 
 // route for activity logs 
-router.get("/:roomId/activity", authMiddleware, async (req, res) => {
+/*router.get("/:roomId/activity", authMiddleware, async (req, res) => {
   try {
     const { roomId } = req.params;
 
@@ -275,7 +275,7 @@ router.get("/:roomId/activity", authMiddleware, async (req, res) => {
     console.error("Error fetching activity:", error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+});*/
 
 
 

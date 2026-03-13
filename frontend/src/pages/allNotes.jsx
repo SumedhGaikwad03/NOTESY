@@ -1,4 +1,5 @@
 // this is the component that displays all notes and allows editing and deleting them via buttons 
+// is a rudenat file 
 import React, { useEffect, useState } from 'react';
 import { handleGetAllNotes , handleDeleteNote , handleUpdateNote } from '../utils/noteHandlers';
 import UpdateNote from '../components/UpdateNote';

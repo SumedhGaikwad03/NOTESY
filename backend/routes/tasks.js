@@ -34,7 +34,8 @@ router.get("/:roomId/tasks", authMiddleware, async (req, res) => {
         completed: 1,        // false first
         completedAt: 1,      // null first
         createdAt: 1
-      });
+      })
+      .populate("createdBy", "username");
 
     res.json(tasks);
 
@@ -128,10 +129,15 @@ router.put("/:roomId/tasks/:taskId", authMiddleware, async (req, res) => {
 
     await task.save();
 
-    const io = getIO();
-    io.to(task.room.toString()).emit("task_updated", task);
+    // Re-fetch with populated user so frontend gets username
+    const populatedTask = await Task.findById(task._id)
+      .populate("createdBy", "username");
 
-    res.json(task);
+
+    const io = getIO();
+    io.to(task.room.toString()).emit("task_updated", populatedTask  ) ;
+
+    res.json(populatedTask);
 
   } catch (error) {
     console.error("Error updating task:", error);

@@ -2,7 +2,7 @@ import React from "react";
 import { FileText, Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-
+// is a redunat file 
 
 function Sidebar({
   title,

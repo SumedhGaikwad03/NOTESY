@@ -4,7 +4,7 @@ import authMiddleware from '../middleware/auth.js';
 import express from 'express';
 import Note from '../models/note.js';
 import Room from '../models/room.js';
-import Activity from '../models/activity.js';
+//import Activity from '../models/activity.js';
 import { getIO } from '../socket.js'; // 🔌 we get socket instance safely from singleton
 
 const router = express.Router();
@@ -71,18 +71,18 @@ router.post('/add', authMiddleware, async (req, res) => {
        // that user id to create a note for that user only
 
     // we create activity BEFORE emitting socket so we can broadcast it
-    const activity = await Activity.create({
+    /*const activity = await Activity.create({
       room: roomId,
       user: req.userId,
       type: "note_created",
       targetId: note._id,
       meta: { title: note.title }
-    });
+    });*/
 
     // 🔌 emit real-time events
     const io = getIO();
     io.to(roomId.toString()).emit("note_created", note);
-    io.to(roomId.toString()).emit("activity_update", activity);
+    //io.to(roomId.toString()).emit("activity_update", activity);
 
     res.status(201).json(note);
 
@@ -185,17 +185,17 @@ router.put('/update/:id', authMiddleware, async (req, res) => {
 
     console.log("note updated");
 
-    const activity = await Activity.create({
+    /*const activity = await Activity.create({
       room: note.room,
       user: req.userId,
       type: "note_updated",
       targetId: note._id,
       meta: { title: note.title }
-    });
+    });*/
 
     const io = getIO();
     io.to(note.room.toString()).emit("note_updated", note);
-    io.to(note.room.toString()).emit("activity_update", activity);
+    //io.to(note.room.toString()).emit("activity_update", activity);
 
     res.status(200).json(note);
 
@@ -245,17 +245,17 @@ router.delete('/delete/:id', authMiddleware, async (req, res) => {
 
     console.log("Note deleted");
 
-    const activity = await Activity.create({
+    /*const activity = await Activity.create({
       room: roomId,
       user: req.userId,
       type: "note_deleted",
       targetId: id,
       meta: { title: note.title }
-    });
+    });*/
 
     const io = getIO();
     io.to(roomId.toString()).emit("note_deleted", id);
-    io.to(roomId.toString()).emit("activity_update", activity);
+    //io.to(roomId.toString()).emit("activity_update", activity);
 
     res.status(204).send();
 
