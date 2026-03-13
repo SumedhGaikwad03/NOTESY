@@ -572,15 +572,28 @@ function RoomView() {
                             checked={task.completed}
                             style={{ marginTop: "2px", accentColor: "#f97316", width: "15px", height: "15px", cursor: "pointer", flexShrink: 0 }}
                             onChange={async () => {
-                              const updated = !task.completed;
-                              setTasks(prev => prev.map(t => t._id === task._id ? { ...t, completed: updated } : t));
-                              try {
-                                const { data: updatedTask } = await api.put(`/rooms/${roomId}/tasks/${task._id}`, { completed: updated });
-                                setTasks(prev => prev.map(t => t._id === task._id ? updatedTask : t));
-                              } catch {
-                                setTasks(prev => prev.map(t => t._id === task._id ? { ...t, completed: !updated } : t));
-                              }
-                            }}
+  const updated = !task.completed;
+
+  // optimistic update
+  setTasks(prev =>
+    prev.map(t =>
+      t._id === task._id ? { ...t, completed: updated } : t
+    )
+  );
+
+  try {
+    await api.put(`/rooms/${roomId}/tasks/${task._id}`, {
+      completed: updated
+    });
+  } catch {
+    // revert if API fails
+    setTasks(prev =>
+      prev.map(t =>
+        t._id === task._id ? { ...t, completed: !updated } : t
+      )
+    );
+  }
+}}
                           />
                           <div style={{ flex: 1, minWidth: 0, marginLeft: "10px" }}>
                             <p style={{ fontSize: "13px", fontWeight: 500, lineHeight: 1.4, color: task.completed ? "#a8a29e" : "#1c1917", textDecoration: task.completed ? "line-through" : "none", marginBottom: "3px" }}>
@@ -734,7 +747,7 @@ function RoomView() {
         {/* <ActivityPanel
           show={showActivity} activity={activity}
           onClose={() => setShowActivity(false)} renderActivityText={renderActivityText}
-        /> */}
+        />
 
         {/* ── BETA / WELCOME MODAL ── */}
         <AnimatePresence>
