@@ -576,7 +576,7 @@ function RoomView() {
                               setTasks(prev => prev.map(t => t._id === task._id ? { ...t, completed: updated } : t));
                               try {
                                 const { data: updatedTask } = await api.put(`/rooms/${roomId}/tasks/${task._id}`, { completed: updated });
-                                setTasks(prev => prev.map(t => t._id === task._id ? updatedTask : t));
+                                //setTasks(prev => prev.map(t => t._id === task._id ? updatedTask : t));
                               } catch {
                                 setTasks(prev => prev.map(t => t._id === task._id ? { ...t, completed: !updated } : t));
                               }
