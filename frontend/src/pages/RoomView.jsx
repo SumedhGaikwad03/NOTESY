@@ -337,9 +337,14 @@ function RoomView() {
                             <p className={`text-sm font-medium leading-snug ${task.completed ? "line-through text-gray-400" : "text-amber-900"}`}>
                               {task.text}
                             </p>
-                            <p className="text-xs text-amber-500 mt-0.5">{task.createdBy?.username}</p>
+                            
                           </div>
                         </div>
+                        {/* Username at the bottom-left */}
+                       <p className="text-xs text-amber-500 mt-2 text-left">
+                         {task.createdBy?.username}
+                         </p>
+
                         <button
                           onClick={async () => {
                             const taskId = task._id;
