@@ -19,6 +19,7 @@ const app = express();
 app.use(cors({
   origin: [
     "https://notesy-sumedh-gaikwads-projects.vercel.app",
+    "https://atrio-gamma.vercel.app/",
     "http://localhost:3000",
     "http://localhost:5173"
   ],
