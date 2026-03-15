@@ -20,7 +20,8 @@ export const initSocket = (server) => {
     origin: [
       "http://localhost:3000",
       "http://localhost:5173",
-      "https://notesy-sumedh-gaikwads-projects.vercel.app"
+      "https://notesy-sumedh-gaikwads-projects.vercel.app",
+      "https://atrio-gamma.vercel.app/"
     ],
     methods: ["GET", "POST"],
     credentials: true
