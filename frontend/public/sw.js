@@ -26,14 +26,13 @@ self.addEventListener("activate", (event) => {
 
 /* Fetch — network first, fallback to cache */
 self.addEventListener("fetch", (event) => {
-  /* Skip non-GET and API calls — always go to network */
   if (event.request.method !== "GET") return;
   if (event.request.url.includes("/api/")) return;
+  if (!event.request.url.startsWith("http")) return; // ← add this line
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        /* Cache a copy of the response */
         const clone = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         return response;
