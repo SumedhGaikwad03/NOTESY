@@ -21,11 +21,15 @@ app.use(cors({
     "https://notesy-sumedh-gaikwads-projects.vercel.app",
     "https://atrio-gamma.vercel.app",
     "http://localhost:3000",
-    "http://localhost:5173",
-
+    "http://localhost:5173"
   ],
-  methods: ["GET", "POST", "PUT", "DELETE"]
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type","Authorization"],
+  credentials: true
 }));
+
+// handle preflight
+app.options("*", cors());
 
 app.use(express.json());
 app.get("/api/health", (req, res) => {
