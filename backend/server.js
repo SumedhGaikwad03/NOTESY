@@ -28,8 +28,7 @@ app.use(cors({
   credentials: true
 }));
 
-// handle preflight
-app.options("*", cors());
+
 
 app.use(express.json());
 app.get("/api/health", (req, res) => {
