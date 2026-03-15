@@ -103,7 +103,7 @@ function RoomView() {
   useEffect(() => {
     fetchNotes(); fetchRoom(); /*fetchActivity(); */ fetchTasks();
     connectSocket();
-    const joinRoom = () => socket.emit("join_room", roomId);
+    const joinRoom = () => socket.emit("join_room", roomId); 
     if (!localStorage.getItem("atrio_beta_seen")) setShowBetaNotice(true);
     if (socket.connected) joinRoom();
     socket.on("connect", joinRoom);
@@ -571,14 +571,40 @@ function RoomView() {
                             type="checkbox"
                             checked={task.completed}
                             style={{ marginTop: "2px", accentColor: "#f97316", width: "15px", height: "15px", cursor: "pointer", flexShrink: 0 }}
-                      onChange={async () => {
+                            onChange={async () => {
+                              if (task.isOptimistic) return;
+
                               const updated = !task.completed;
-                              setTasks(prev => prev.map(t => t._id === task._id ? { ...t, completed: updated } : t));
+
+                              setTasks(prev =>
+                                prev.map(t =>
+                                  t._id === task._id
+                                    ? { ...t, completed: updated, isOptimistic: true }
+                                    : t
+                                )
+                              );
+
                               try {
-                                const { data: updatedTask } = await api.put(`/rooms/${roomId}/tasks/${task._id}`, { completed: updated });
-                                //setTasks(prev => prev.map(t => t._id === task._id ? updatedTask : t));
+                                await api.put(`/rooms/${roomId}/tasks/${task._id}`, { completed: updated });
+
+                                setTasks(prev =>
+                                  prev.map(t =>
+                                    t._id === task._id
+                                      ? { ...t, isOptimistic: false }
+                                      : t
+                                  )
+                                );
+
                               } catch {
-                                setTasks(prev => prev.map(t => t._id === task._id ? { ...t, completed: !updated } : t));
+
+                                setTasks(prev =>
+                                  prev.map(t =>
+                                    t._id === task._id
+                                      ? { ...t, completed: !updated, isOptimistic: false }
+                                      : t
+                                  )
+                                );
+
                               }
                             }}
                           />

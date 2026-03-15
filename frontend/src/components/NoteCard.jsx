@@ -115,6 +115,19 @@ function NoteCard({
         <>
           <h3 className="font-bold text-lg">{note.title}</h3>
           <p className="mt-2 text-gray-700">{note.content}</p>
+          {note.user?.username && (
+  <div className="mt-3 pt-2 border-t border-yellow-100 flex items-center gap-2">
+    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-300 to-orange-400 flex items-center justify-center flex-shrink-0">
+      <span className="text-white font-bold" style={{ fontSize: "9px" }}>
+        {note.user.username.slice(0, 1).toUpperCase()}
+      </span>
+    </div>
+    <span className="text-xs font-medium text-amber-800 truncate">
+       {note.user.username}
+    </span>
+  </div>
+)}
+
         </>
       )}
     </motion.div>

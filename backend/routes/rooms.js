@@ -102,7 +102,9 @@ router.get('/:roomId/notes', authMiddleware, async (req, res) => {
     // fetching all notes that belong to this room sorted by newest first
     const notes = await Note.find({
       room: roomId
-    }).sort({ createdAt: -1 });
+    }
+    ).populate("user", "username")
+    .sort({ createdAt: -1 });
 
     res.json(notes); // sending notes to frontend
 

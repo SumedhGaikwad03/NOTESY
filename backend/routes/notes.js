@@ -16,9 +16,9 @@ router.get("/my", authMiddleware, async (req, res) => {
 
   try {
 
-    const notes = await Note.find({
-      user: req.userId
-    }).sort({ createdAt: -1 });
+   const notes = await Note.find({ user: req.userId })
+  .populate("user", "username")
+  .sort({ createdAt: -1 });
 
     res.json(notes);
 
@@ -80,11 +80,13 @@ router.post('/add', authMiddleware, async (req, res) => {
     });*/
 
     // 🔌 emit real-time events
+    const populatedNote = await note.populate("user", "username");
+
     const io = getIO();
-    io.to(roomId.toString()).emit("note_created", note);
+    io.to(roomId.toString()).emit("note_created", populatedNote);
     //io.to(roomId.toString()).emit("activity_update", activity);
 
-    res.status(201).json(note);
+    res.status(201).json(populatedNote);
 
     console.log("note added");
 
@@ -157,6 +159,7 @@ router.put('/update/:id', authMiddleware, async (req, res) => {
 
     const { id } = req.params;
     const { title, content } = req.body;
+   // const roomId = req.body.roomId;
 
     const note = await Note.findById(id);
 
@@ -182,6 +185,13 @@ router.put('/update/:id', authMiddleware, async (req, res) => {
     note.content = content ?? note.content;
 
     await note.save();
+    const populatedNote = await note.populate("user", "username");
+
+    const io = getIO();
+    io.to(note.room.toString()).emit("note_updated", populatedNote);
+    //io.to(roomId.toString()).emit("activity_update", activity);
+
+    res.status(200).json(populatedNote);
 
     console.log("note updated");
 
@@ -193,11 +203,7 @@ router.put('/update/:id', authMiddleware, async (req, res) => {
       meta: { title: note.title }
     });*/
 
-    const io = getIO();
-    io.to(note.room.toString()).emit("note_updated", note);
-    //io.to(note.room.toString()).emit("activity_update", activity);
-
-    res.status(200).json(note);
+   
 
   } catch (error) {
 
