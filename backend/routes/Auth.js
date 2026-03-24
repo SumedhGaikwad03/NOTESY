@@ -5,23 +5,35 @@ import User from "../models/User_Model.js";
 
 const router = express.Router();
 
-router.post("/signup", async (req , res)=>{
-    try{
-        const{ username, email, password } = req.body ; 
+router.post("/signup", async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
 
-        const existingUser =await User.findOne({ $or :[{email},{username}]})
-        if(existingUser){
-            return res.status(400).json({message:"User already exists"});
-        }
-        const user= new User({ username, email, password });
-        await user.save();
-        res.status(201).json({message:"User created successfully"});
-    }
-    catch(error){
-        console.error("Error during signup:", error);
-        res.status(500).json({message:"Internal server error"});
+    // 1. Capacity check first — cheapest rejection
+    if (process.env.USER_LIMIT_ENABLED === "true") {
+      const userCount = await User.countDocuments();
+      if (userCount >= parseInt(process.env.USER_LIMIT)) {
+        return res.status(403).json({
+          message: "Atrio is currently at capacity. Check back soon."
+        });
+      }
     }
 
+    // 2. Then check duplicate
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // 3. Create user
+    const user = new User({ username, email, password });
+    await user.save();
+    res.status(201).json({ message: "User created successfully" });
+
+  } catch (error) {
+    console.error("Error during signup:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 router.post("/login", async (req , res)=>{
