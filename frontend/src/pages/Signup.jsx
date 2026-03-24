@@ -9,7 +9,7 @@ function Signup() {
 
   const navigate = useNavigate();
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value }); // wht have we used this here
 
   const handleSubmit = async (e) => {
     e.preventDefault();

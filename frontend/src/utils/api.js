@@ -2,7 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
-});
+}); // this is an axios object that will help send requests to backend from the frontend 
 
 api.interceptors.request.use((config) => {
 
@@ -18,9 +18,11 @@ api.interceptors.request.use((config) => {
 
 // Notes APIs
 
-export const getAllNotes = () => api.get("/notes/allnotes");
+// this is an redundant route 
+// export const getAllNotes = () => api.get("/notes/allnotes");
 
-export const getMyNotes = () => api.get("/notes/my");
+//this is to get my notes for an webpage 
+//export const getMyNotes = () => api.get("/notes/my");
 
 export const addNote = (note) => api.post("/notes/add", note);
 
@@ -52,4 +54,7 @@ api.interceptors.response.use(
 
 
 
-export default api;
+export default api; // this is an axios a obj which makes api calls to the backend and we are expoeting 
+
+// this further calls  notes handels 
+// this also calls taskrouter and roomrouter form axios instace and using the api instace 

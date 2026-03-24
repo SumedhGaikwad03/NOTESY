@@ -9,7 +9,8 @@ const socket = io(SOCKET_URL, {
 });
 
 export const connectSocket = () => {
-  socket.auth = {
+  socket.auth = { // here the auth is directly calling to the backend socket.js file where we have defined the instance for these type of 
+    // sockets namely io instance and there we verify the token and then the req is allowed to pass via next() function 
     token: localStorage.getItem("token"),
   };
   socket.connect();

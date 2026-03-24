@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import CreateRoomModal from "../components/CreateRoomModal";
-import LeaveRoomModal from "../components/LeaveRoomModal";
+import CreateRoomModal from "../components/modals/CreateRoomModal";
+import LeaveRoomModal from "../components/modals/LeaveRoomModal";
 
 function Rooms() {
   const [rooms, setRooms] = useState([]);
@@ -452,7 +452,8 @@ function Rooms() {
                         <div className="room-card-icon">🏛</div>
                         <button
                           className="room-leave-btn"
-                          onClick={(e) => {
+                          onClick={(e) => { //  as this is a smaller button inside a smaller button we need to stop propagation 
+                            // to prevent the click for opening the room as well as opening the leave modal 
                             e.stopPropagation();
                             setRoomToLeave(room._id);
                             setShowLeaveModal(true);

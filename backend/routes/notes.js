@@ -5,13 +5,14 @@ import express from 'express';
 import Note from '../models/note.js';
 import Room from '../models/room.js';
 //import Activity from '../models/activity.js';
-import { getIO } from '../socket.js'; // 🔌 we get socket instance safely from singleton
+import { getIO } from '../socket.js'; // 🔌 we get socket instance safely from singleton // 
 
 const router = express.Router();
 
 
 // GET CURRENT USER NOTES (across all rooms)
-
+// this is an redundat route now 
+/*
 router.get("/my", authMiddleware, async (req, res) => {
 
   try {
@@ -32,7 +33,7 @@ router.get("/my", authMiddleware, async (req, res) => {
 
   }
 
-});
+});*/
 
 
 // this is made to add a note
@@ -105,7 +106,7 @@ router.post('/add', authMiddleware, async (req, res) => {
 
 // this is just a test route
 // you can remove it later
-router.get('/getnote', authMiddleware, async (req, res) => {
+/*router.get('/getnote', authMiddleware, async (req, res) => {
 
   try {
 
@@ -127,9 +128,11 @@ router.get('/getnote', authMiddleware, async (req, res) => {
 
   }
 
-});
+});*/
 
+// this is the route for an older version 
 
+/*
 router.get('/allnotes', authMiddleware, async (req, res) => {
 
   try {
@@ -150,7 +153,7 @@ router.get('/allnotes', authMiddleware, async (req, res) => {
 
   }
 
-});
+});*/
 
 
 router.put('/update/:id', authMiddleware, async (req, res) => {
@@ -260,7 +263,7 @@ router.delete('/delete/:id', authMiddleware, async (req, res) => {
     });*/
 
     const io = getIO();
-    io.to(roomId.toString()).emit("note_deleted", id);
+    io.to(roomId.toString()).emit("note_deleted", id);// used to emit the note has beendeleted 
     //io.to(roomId.toString()).emit("activity_update", activity);
 
     res.status(204).send();
