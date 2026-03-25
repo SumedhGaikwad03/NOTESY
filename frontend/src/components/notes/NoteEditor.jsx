@@ -7,7 +7,7 @@ function NoteEditor({ title, content, setTitle, setContent }) {
         .note-title-input {
           width: 100%; border: none; outline: none; background: transparent;
           font-size: 22px; font-weight: 700; color: #1c1917;
-          font-family: 'Playfair Display', serif;
+            font-family: 'DM Sans', sans-serif;
           padding-bottom: 10px;
           border-bottom: 2px solid #fde68a;
           transition: border-color 0.2s;
